@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "plugins": ["prettier", "import", "simple-import-sort"],
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "rules": {
+    "prettier/prettier": "error",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "no-unused-vars": "warn",
+    "no-console": "warn"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "test-results/",
+    "playwright-report/",
+    "package-lock.json"
+  ]
+}
