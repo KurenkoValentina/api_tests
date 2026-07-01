@@ -26,6 +26,56 @@ export class TodosService {
     });
   }
 
+  async postJson(token, todo) {
+    return test.step('POST /todos (JSON)', async () => {
+      const response = await this.request.post(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          'Content-Type': 'application/json', // JSON
+          Accept: 'application/json', //  JSON
+        },
+        data: todo,
+      });
+      const headers = await response.headers();
+      const body = await response.json();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+
+  async postXml(token, xmlPayload) {
+    return test.step('POST /todos (XML)', async () => {
+      const response = await this.request.post(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          'Content-Type': 'application/xml',
+          Accept: 'application/xml',
+        },
+        data: xmlPayload,
+      });
+      const headers = await response.headers();
+      const body = await response.text(); // XML
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+
+  async postPlainText(token, textPayload) {
+    return test.step('POST /todos (text/plain)', async () => {
+      const response = await this.request.post(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          'Content-Type': 'text/plain',
+        },
+        data: textPayload,
+      });
+      const headers = await response.headers();
+      const body = await response.json();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+
   async getAllTodos(token) {
     return test.step('get /todos', async () => {
       let response = await this.request.get(`${urlApi}/todos`, {
@@ -91,7 +141,8 @@ export class TodosService {
       });
       const headers = await response.headers();
       const body = await response.json();
-      return { body, headers };
+      const status = await response.status();
+      return { body, headers, status };
     });
   }
 

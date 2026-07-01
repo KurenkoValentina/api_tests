@@ -14,6 +14,11 @@ export class TodoBuilder {
     this.description = faker.lorem.words(wordsCount) ?? faker.lorem.word();
     return this;
   }
+  //  Для теста на 413 — строка заданной длины
+  addDescriptionWithLength(length) {
+    this.description = 'a'.repeat(length);
+    return this;
+  }
 
   addDoneStatus(status) {
     this.doneStatus = status;
