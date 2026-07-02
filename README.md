@@ -51,10 +51,9 @@
 
 ## Как запустить:
 
-npm install
-npm run test          # все тесты
-npm run test:get      # только GET
-npm run test:post     # только POST
-npm run test:put      # только PUT
-npm run test:delete   # только DELETE
-npm run test:patch    # только PATCH
+* npm run test          все тесты
+* npm run test:get      только GET
+* npm run test:post     только POST
+* npm run test:put      только PUT
+* npm run test:delete   только DELETE
+* npm run test:patch    только PATCH
