@@ -8,7 +8,12 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.js\"",
     "test": "npx playwright test",
-    "test:api": "npx playwright test --project=api"
+    "test:api": "npx playwright test --project=api",
+    "test:get": "npx playwright test -g @GET",
+    "test:post": "npx playwright test -g @POST",
+    "test:put": "npx playwright test -g @PUT",
+    "test:delete": "npx playwright test -g @DELETE",
+    "test:patch": "npx playwright test -g @PATCH"
   },
   "keywords": [],
   "author": "",

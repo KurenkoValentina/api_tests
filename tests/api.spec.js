@@ -16,7 +16,7 @@ test.describe('API Tests - единая сессия', () => {
   });
 
   // Тест 1: Создание сессии
-  test('POST /challenger @POST', async () => {
+  test('POST /challenger - получение токена @POST', async () => {
     expect(token).toBeDefined();
   });
 
@@ -198,7 +198,7 @@ test.describe('API Tests - единая сессия', () => {
   });
 
   //тест 17 - POST /todos XML (201)
-  test('POST /todos XML - создание задачи в XML (201) @POST @xml', async ({ api }) => {
+  test('POST /todos XML - создание задачи в XML (201) @POST ', async ({ api }) => {
     const xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
 <todo>
   <title>XML задача</title>
@@ -230,5 +230,119 @@ test.describe('API Tests - единая сессия', () => {
 
     expect(status).toBe(415);
     expect(body.errorMessages).toContain('Unsupported Content Type - text/plain');
+  });
+  // тест 20 - POST /todos  XML -> JSON
+  test('POST /todos отправляем XML, принимаем JSON (201) @POST ', async ({ api }) => {
+    const xmlPayload = `<?xml version="1.0" encoding="UTF-8"?>
+<todo>
+  <title>XML задача</title>
+  <doneStatus>true</doneStatus>
+  <description>Это задача </description>
+</todo>`;
+
+    const { body, status, headers } = await api.todos.postXmlAcceptJson(token, xmlPayload);
+    expect(status).toBe(201);
+    expect(headers['content-type']).toContain('application/json');
+    expect(body.title).toContain('задача');
+    expect(body.description).toContain('Это задача');
+    expect(body.doneStatus).toBe(true);
+  });
+  // тест 21 - POST /todos  JSON -> XML (201)
+  test('POST /todos - отправляем JSON, принимаем XML (201) (201) @POST', async ({ api }) => {
+    const todo = new TodoBuilder().addTitle().addDoneStatus(true).addDescription().build();
+
+    const { body, headers } = await api.todos.postJsonAcceptXml(token, todo);
+    expect(headers['content-type']).toContain('application/xml');
+    expect(body).toContain('<todo>');
+    expect(body).toContain(`<title>${todo.title}</title>`);
+    expect(body).toContain('<doneStatus>true</doneStatus>');
+    expect(body).toContain('<id>');
+    expect(body).toContain(`<description>${todo.description}</description>`);
+  });
+
+  // тест 22 - GET /todos с Accept: application/xml (200)
+  test('GET /todos (200) - получение задач в XML формате @GET', async ({ api }) => {
+    const { body, status, headers } = await api.todos.getXml(token);
+
+    expect(status).toBe(200);
+    expect(headers['content-type']).toContain('application/xml');
+    expect(body).toContain('<todos>');
+    expect(body).toContain('<todo>');
+    expect(body).toContain('</todo>');
+    expect(body).toContain('</todos>');
+
+    expect(body).toContain('<id>');
+    expect(body).toContain('<title>');
+    expect(body).toContain('<doneStatus>');
+    expect(body).toContain('<description>');
+  });
+  // тест 23 - GET /todos с Accept: application/json (200)
+  test('GET /todos (200) - получение задач в JSON формате @GET', async ({ api }) => {
+    const { body, status, headers } = await api.todos.getJson(token);
+
+    expect(status).toBe(200);
+    expect(headers['content-type']).toContain('application/json');
+    expect(body.todos[0].id).toBeDefined();
+    expect(body.todos[0].title).toBeDefined();
+    expect(body.todos[0].doneStatus).toBeDefined();
+    expect(body.todos[0].description).toBeDefined();
+  });
+
+  // тест 24 - GET /todos с неподдерживаемым Accept (406)
+  test('GET /todos (406) - с неподдерживаемым Accept @GET', async ({ api }) => {
+    const { body, status, headers } = await api.todos.getWithUnsupportedAccept(token);
+
+    expect(status).toBe(406);
+    expect(body.errorMessages).toContain('Unrecognised Accept Type');
+  });
+  // тест 25 - PUT /todos/{id}(200) - с передачей в теле ответа не всех полей
+  test('PUT /todos/{id} - обновление не целиком - дефолтные поля в ответе @PUT', async ({
+    api,
+  }) => {
+    const todo = new TodoBuilder().addTitle(2).addDoneStatus(true).addDescription(3).build();
+    const { body: created } = await api.todos.post(token, todo);
+    createdToDoId = created.id; //  обновляем общую переменную
+
+    const newToDo = new TodoBuilder().addTitle(3).build();
+
+    const { body } = await api.todos.putById(token, newToDo, createdToDoId);
+    expect(body.title).toEqual(newToDo.title);
+    expect(body.doneStatus).toEqual(false);
+    expect(body.description).toHaveLength(0);
+    //удаляю задачу , потмоу что может не хватить места(лимит задач)
+    await api.todos.delete(token, createdToDoId);
+  });
+
+  //тест 26 - PUT /todos/{id} (400) - попытка изменить id
+  test('PUT /todos/{id} (400) - попытка изменить id @PUT', async ({ api }) => {
+    const todo = new TodoBuilder().addTitle(2).addDoneStatus(true).addDescription(3).build();
+    const { body: created } = await api.todos.post(token, todo);
+    const createdId = created.id; //  обновляем общую переменную
+    const differentId = createdId + 1;
+    const newToDo = new TodoBuilder().addId(differentId).addTitle(2).addDescription(3).build();
+    const { body, status } = await api.todos.putById(token, newToDo, createdId);
+    expect(status).toEqual(400);
+    expect(body.errorMessages).toContain(`Can not amend id from ${createdId} to ${newToDo.id}`);
+  });
+  //тест 27 - DELETE /heartbeat (405)
+  test('DELETE /heartbeat - Method Not Allowed (405) @DELETE', async ({ api }) => {
+    const { status } = await api.heartbeat.delete(token);
+    expect(status).toBe(405);
+  });
+  //тест 28 - PATCH /heartbeat (500)
+  test('PATCH /heartbeat - internal server error(500) @PATCH', async ({ api }) => {
+    const { status } = await api.heartbeat.patch(token);
+    expect(status).toBe(500);
+  });
+
+  //тест 29 - GET /heartbeat (204)
+  test('GET /heartbeat - server is running(204) @GET', async ({ api }) => {
+    const { status } = await api.heartbeat.get(token);
+    expect(status).toBe(204);
+  });
+  //тест 30 - POST /heartbeat as DELETE(405)
+  test('POST /heartbeat as DELETE - Method Not Allowed (405) @POST', async ({ api }) => {
+    const { status } = await api.heartbeat.post(token);
+    expect(status).toBe(405);
   });
 });

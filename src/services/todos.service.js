@@ -76,6 +76,40 @@ export class TodosService {
     });
   }
 
+  async postXmlAcceptJson(token, xmlPayload) {
+    return test.step('POST /todos (XML → JSON)', async () => {
+      const response = await this.request.post(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          'Content-Type': 'application/xml',
+          Accept: 'application/json',
+        },
+        data: xmlPayload,
+      });
+      const headers = await response.headers();
+      const body = await response.json();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+
+  async postJsonAcceptXml(token, todo) {
+    return test.step('POST /todos (JSON → XML)', async () => {
+      const response = await this.request.post(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          'Content-Type': 'application/json',
+          Accept: 'application/xml',
+        },
+        data: todo,
+      });
+      const headers = await response.headers();
+      const body = await response.text();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+
   async getAllTodos(token) {
     return test.step('get /todos', async () => {
       let response = await this.request.get(`${urlApi}/todos`, {
@@ -84,6 +118,48 @@ export class TodosService {
         },
       });
 
+      const headers = await response.headers();
+      const body = await response.json();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+  async getXml(token) {
+    return test.step('GET /todos (XML)', async () => {
+      const response = await this.request.get(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          Accept: 'application/xml',
+        },
+      });
+      const headers = await response.headers();
+      const body = await response.text();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+  async getJson(token) {
+    return test.step('GET /todos (JSON)', async () => {
+      const response = await this.request.get(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          Accept: 'application/json',
+        },
+      });
+      const headers = await response.headers();
+      const body = await response.json();
+      const status = await response.status();
+      return { body, headers, status };
+    });
+  }
+  async getWithUnsupportedAccept(token) {
+    return test.step('GET /todos (gzip)', async () => {
+      const response = await this.request.get(`${urlApi}/todos`, {
+        headers: {
+          'x-challenger': token,
+          Accept: 'application/gzip',
+        },
+      });
       const headers = await response.headers();
       const body = await response.json();
       const status = await response.status();
@@ -157,8 +233,9 @@ export class TodosService {
 
       const headers = await response.headers();
       const body = await response.json();
+      const status = await response.status();
 
-      return { body, headers };
+      return { body, headers, status };
     });
   }
 
