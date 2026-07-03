@@ -37,7 +37,7 @@ test.describe('API Tests - единая сессия', () => {
     expect(body.description).toEqual(todo.description);
   });
 
-  // Тест 4 получение всех задач GET /todos
+  // Тест 4 Получение всех задач GET /todos
   test('GET /todos (200) - получение списка всех задач @GET', async ({ api }) => {
     const { body, status } = await api.todos.getAllTodos(token);
 
@@ -344,5 +344,20 @@ test.describe('API Tests - единая сессия', () => {
   test('POST /heartbeat as DELETE - Method Not Allowed (405) @POST', async ({ api }) => {
     const { status } = await api.heartbeat.post(token);
     expect(status).toBe(405);
+  });
+  // тест 31 - удалить все задачи
+  test('Удалить все задачи @DELETE', async ({ api }) => {
+    // Получаем все задачи
+    const { body } = await api.todos.getAllTodos(token);
+    const ids = body.todos.map(({ id }) => id);
+
+    // Удаляем каждую задачу
+    for (const id of ids) {
+      const { status } = await api.todos.delete(token, id);
+      expect(status).toBe(200);
+    }
+    // Проверяем, что список пуст
+    const { body: remainingTodos } = await api.todos.getAllTodos(token);
+    expect(remainingTodos.todos).toHaveLength(0);
   });
 });
