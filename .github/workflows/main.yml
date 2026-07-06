@@ -1,0 +1,40 @@
+# Это комментарий.
+# Это название пайплайна
+name: pw7 автотесты API
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+# ручной запуск
+  workflow_dispatch:
+
+jobs:
+  pw7:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.0
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6.4.0
+      - name: Установить пакет
+        run: npm ci
+      - name: Установить браузеры
+        run: npx playwright install --with-deps
+      - name: Запусти тесты
+        run: npm t
+      - name: Генерируем отчет
+        run: npx allure awesome ./allure-results --single-file
+        continue-on-error: true
+        if: always()
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v7.0.1
+        continue-on-error: true
+        if: always()
+        with:
+          name: artifacts
+          path: |
+            allure-report/index.html
+            allure-results
+            playwright-report
