@@ -6,9 +6,6 @@ test.describe('API Tests - единая сессия', () => {
   let token;
   let createdToDoId;
 
-  // Гарантируем последовательное выполнение
-  test.describe.configure({ mode: 'serial' });
-
   // Токен создаётся ОДИН раз перед всеми тестами
   test.beforeAll(async ({ api }) => {
     const headers = await api.challenger.post();
