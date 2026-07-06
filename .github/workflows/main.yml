@@ -1,6 +1,6 @@
 # Это комментарий.
 # Это название пайплайна
-name: pw7 автотесты API
+name: pw7 автотесты UI/API
 
 on:
   push:
@@ -15,26 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+        uses: actions/setup-node@v6.4.0
       - name: Установить пакет
         run: npm ci
       - name: Установить браузеры
         run: npx playwright install --with-deps
-      - name: Install Allure
-        run: npm install -g allure-commandline
       - name: Запусти тесты
-        run: npm t -- --reporter=allure-playwright
+        run: npm t
       - name: Генерируем отчет
-        run: npx allure generate ./allure-results --clean -o allure-report
-
+        run: npx allure awesome ./allure-results --single-file
+        continue-on-error: true
         if: always()
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
-
+        uses: actions/upload-artifact@v7.0.1
+        continue-on-error: true
         if: always()
         with:
           name: artifacts
